@@ -3,10 +3,11 @@
 import { type ComponentRenderProps } from "@json-render/react";
 
 export function Stack({ element, children }: ComponentRenderProps) {
-  const { direction, gap, align } = element.props as {
+  const { direction, gap, align, wrap } = element.props as {
     direction?: string | null;
     gap?: string | null;
     align?: string | null;
+    wrap?: boolean | null;
   };
   const gaps: Record<string, string> = {
     none: "0",
@@ -28,6 +29,7 @@ export function Stack({ element, children }: ComponentRenderProps) {
         flexDirection: direction === "horizontal" ? "row" : "column",
         gap: gaps[gap || "md"],
         alignItems: alignments[align || "stretch"],
+        flexWrap: wrap ? "wrap" : "nowrap",
       }}
     >
       {children}

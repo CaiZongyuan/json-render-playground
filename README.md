@@ -18,6 +18,30 @@ Learning-friendly extras:
 - **Hover-to-locate JSON**: hover a component in Live preview → highlights the matching element in the JSON tree
 - **Tree order matches render**: JSON tree lists elements in UI traversal order (root → children)
 - **List/Chart defaults**: demo data renders out-of-the-box (no extra item templates required)
+- **Chat-based UI editing**: click an element to select → ask the agent to edit/add/remove → JSON patch lines apply live; reply renders in a Markdown modal (with Raw stream view)
+
+## Why json-render?
+
+When you want an AI agent to help build or edit UI, you usually need two things at the same time:
+- **Creativity** (the model proposes layouts and components)
+- **Control** (your app stays safe, predictable, and debuggable)
+
+json-render gives you that control by turning your UI into a serializable `UITree` and letting the agent mutate it through **JSONL patches**. The agent can “see” the current UI tree and “operate” on it, while you keep the guardrails: a predefined component registry, data bindings, and named actions implemented by your app.
+
+## Relationship to Google A2UI
+
+This project space is often described as **“AI → JSON → UI”**. Google’s **A2UI** and `vercel-labs/json-render` overlap conceptually, but they emphasize different goals:
+- **A2UI** is **protocol-first**: standardized streaming messages, cross-framework portability.
+- **json-render** is **developer-first**: flexibility in your contracts and tight integration with your stack.
+
+The json-render maintainers also clarified that json-render’s JSON format is primarily a **library API**, not a protocol intended to become a universal standard, while still being open to interoperability where it’s valuable.
+
+Reference Q&A: `https://github.com/vercel-labs/json-render/issues/9`
+
+## Project origin
+
+This playground is adapted from the upstream dashboard example:
+`https://github.com/vercel-labs/json-render/tree/main/examples/dashboard`
 
 ---
 
@@ -30,6 +54,21 @@ bun run dev
 
 Open `http://localhost:3000`.
 
+### AI Chat (optional)
+
+The chat editor calls `src/app/api/generate/route.ts` and requires `GLM_API_KEY`.
+
+Create `.env.local`:
+```bash
+GLM_API_KEY=...
+```
+
+### Choosing an AI provider/model
+
+The API route uses the Vercel AI SDK, so you can swap model providers as needed.
+
+Provider guide: `https://ai-sdk.dev/docs/getting-started/choosing-a-provider`
+
 ---
 
 ## How the Playground Works
@@ -41,21 +80,31 @@ The UI is a 3-column layout:
 
 Use the panel buttons above **Live preview** to **hide/show** the Playground or JSON panel.
 
+### Chat-based UI editing
+
+1. Click a component in **Live preview** (or in the JSON tree list) to select it.
+2. Use the fixed bottom-center chat input to ask for edits (Ctrl/⌘ + Enter to send).
+3. The agent reply opens in a modal (Markdown). Any standalone JSON patch lines are applied to the current `UITree` as they stream.
+
 ---
 
 ## Screenshots
 
-**Live preview + Playground**
+**1) Full UI overview (Playground + Live preview + JSON tree + Chat)**
 
 ![Live preview + Playground](assets/images/playground01.png)
 
-**Live preview + JSON tree**
+**2) Preview ↔ JSON tree mapping (expanded element)**
 
 ![Live preview + JSON tree](assets/images/playground02.png)
 
-**Playground + Live preview + JSON tree**
+**3) Playground ↔ Data binding ↔ Preview**
 
 ![Playground + Live preview + JSON tree](assets/images/playground03.png)
+
+**4) Chat reply modal (describe selected Table)**
+
+![Chat reply modal](assets/images/playground04.png)
 
 ---
 

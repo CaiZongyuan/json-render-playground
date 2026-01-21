@@ -9,7 +9,7 @@ export const dashboardCatalog = createCatalog({
       props: z.object({
         title: z.string().nullable(),
         description: z.string().nullable(),
-        padding: z.enum(["sm", "md", "lg"]).nullable(),
+        padding: z.enum(["none", "sm", "md", "lg"]).nullable(),
       }),
       hasChildren: true,
       description: "A card container with optional title",
@@ -18,7 +18,7 @@ export const dashboardCatalog = createCatalog({
     Grid: {
       props: z.object({
         columns: z.number().min(1).max(4).nullable(),
-        gap: z.enum(["sm", "md", "lg"]).nullable(),
+        gap: z.enum(["none", "sm", "md", "lg"]).nullable(),
       }),
       hasChildren: true,
       description: "Grid layout with configurable columns",
@@ -27,8 +27,9 @@ export const dashboardCatalog = createCatalog({
     Stack: {
       props: z.object({
         direction: z.enum(["horizontal", "vertical"]).nullable(),
-        gap: z.enum(["sm", "md", "lg"]).nullable(),
+        gap: z.enum(["none", "sm", "md", "lg"]).nullable(),
         align: z.enum(["start", "center", "end", "stretch"]).nullable(),
+        wrap: z.boolean().nullable(),
       }),
       hasChildren: true,
       description: "Flex stack for horizontal or vertical layouts",
@@ -48,10 +49,10 @@ export const dashboardCatalog = createCatalog({
 
     Chart: {
       props: z.object({
-        type: z.enum(["bar", "line", "pie", "area"]),
         dataPath: z.string(),
         title: z.string().nullable(),
-        height: z.number().nullable(),
+        labelKey: z.string().nullable(),
+        valueKey: z.string().nullable(),
       }),
       description: "Display a chart from array data",
     },
@@ -84,8 +85,12 @@ export const dashboardCatalog = createCatalog({
       props: z.object({
         label: z.string(),
         variant: z.enum(["primary", "secondary", "danger", "ghost"]).nullable(),
-        size: z.enum(["sm", "md", "lg"]).nullable(),
-        action: z.string(),
+        action: z
+          .object({
+            name: z.string(),
+            params: z.record(z.unknown()).optional(),
+          })
+          .nullable(),
         disabled: z.boolean().nullable(),
       }),
       description: "Clickable button with action",
@@ -93,8 +98,8 @@ export const dashboardCatalog = createCatalog({
 
     Select: {
       props: z.object({
-        label: z.string().nullable(),
-        bindPath: z.string(),
+        label: z.string(),
+        valuePath: z.string(),
         options: z.array(
           z.object({
             value: z.string(),
@@ -108,9 +113,8 @@ export const dashboardCatalog = createCatalog({
 
     DatePicker: {
       props: z.object({
-        label: z.string().nullable(),
-        bindPath: z.string(),
-        placeholder: z.string().nullable(),
+        label: z.string(),
+        valuePath: z.string(),
       }),
       description: "Date picker input",
     },
@@ -127,9 +131,8 @@ export const dashboardCatalog = createCatalog({
     Text: {
       props: z.object({
         content: z.string(),
-        variant: z.enum(["body", "caption", "label"]).nullable(),
-        color: z
-          .enum(["default", "muted", "success", "warning", "danger"])
+        variant: z
+          .enum(["default", "muted", "success", "warning", "error"])
           .nullable(),
       }),
       description: "Text paragraph",
@@ -138,9 +141,9 @@ export const dashboardCatalog = createCatalog({
     // Status Components
     Badge: {
       props: z.object({
-        text: z.string(),
+        text: z.union([z.string(), z.object({ path: z.string() })]),
         variant: z
-          .enum(["default", "success", "warning", "danger", "info"])
+          .enum(["default", "success", "warning", "error", "info"])
           .nullable(),
       }),
       description: "Small status badge",
@@ -148,10 +151,8 @@ export const dashboardCatalog = createCatalog({
 
     Alert: {
       props: z.object({
-        type: z.enum(["info", "success", "warning", "error"]),
-        title: z.string(),
-        message: z.string().nullable(),
-        dismissible: z.boolean().nullable(),
+        message: z.union([z.string(), z.object({ path: z.string() })]),
+        variant: z.enum(["info", "success", "warning", "error"]).nullable(),
       }),
       description: "Alert/notification banner",
     },
@@ -159,7 +160,7 @@ export const dashboardCatalog = createCatalog({
     // Special Components
     Divider: {
       props: z.object({
-        label: z.string().nullable(),
+        orientation: z.enum(["horizontal", "vertical"]).nullable(),
       }),
       description: "Visual divider",
     },
@@ -168,10 +169,28 @@ export const dashboardCatalog = createCatalog({
       props: z.object({
         title: z.string(),
         description: z.string().nullable(),
-        action: z.string().nullable(),
-        actionLabel: z.string().nullable(),
       }),
       description: "Empty state placeholder",
+    },
+
+    TextField: {
+      props: z.object({
+        label: z.string(),
+        valuePath: z.string(),
+        placeholder: z.string().nullable(),
+        type: z.string().nullable(),
+        checks: z
+          .array(
+            z.object({
+              fn: z.string(),
+              message: z.string(),
+              args: z.record(z.unknown()).optional(),
+            }),
+          )
+          .nullable(),
+        validateOn: z.enum(["change", "blur", "submit"]).nullable(),
+      }),
+      description: "Text input with optional validation checks",
     },
   },
   actions: {

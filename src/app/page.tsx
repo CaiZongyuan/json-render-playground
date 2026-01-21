@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { UITree } from "@json-render/core";
 import { componentRegistry } from "@/src/components/ui";
 import {
@@ -10,12 +10,14 @@ import {
 import { INITIAL_DATA, ACTION_HANDLERS } from "@/src/lib/mockData";
 import {
   applyPatches,
+  applySinglePatch,
   EXAMPLE_PATCHES,
 } from "@/src/lib/patchUtils";
 
 import {
   ActionLogPanel,
   AddElementPanel,
+  ChatPanel,
   DataPanel,
   type ActionLogEntry,
   InspectableRenderer,
@@ -27,6 +29,7 @@ import {
   ActionProvider,
   DataProvider,
   VisibilityProvider,
+  useData,
 } from "@json-render/react";
 import { ValidationProvider } from "@/src/lib/validation";
 
@@ -41,6 +44,7 @@ function DashboardContent({
   onClearActionLogs: () => void;
 }) {
   const [tree, setTree] = useState<UITree>(INITIAL_TREE);
+  const treeRef = useRef<UITree>(INITIAL_TREE);
   const [patchInput, setPatchInput] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [selectedExample, setSelectedExample] = useState<string | null>(null);
@@ -49,15 +53,37 @@ function DashboardContent({
   const [hoveredElementKey, setHoveredElementKey] = useState<string | null>(
     null,
   );
+  const [selectedElementKey, setSelectedElementKey] = useState<string | null>(
+    null,
+  );
+
+  useEffect(() => {
+    treeRef.current = tree;
+  }, [tree]);
+
+  const { data } = useData() as { data: Record<string, unknown> };
 
   const applyPatchString = (patches: string) => {
     const result = applyPatches(tree, patches);
     if (result.success) {
       setTree(result.tree);
+      treeRef.current = result.tree;
       setError(null);
     } else {
       setError(result.error || "Failed to apply patch");
     }
+  };
+
+  const applyPatchLine = (patchLine: string) => {
+    const result = applySinglePatch(treeRef.current, patchLine);
+    if (result.success) {
+      treeRef.current = result.tree;
+      setTree(result.tree);
+      setError(null);
+      return { ok: true as const };
+    }
+    setError(result.error || "Failed to apply patch");
+    return { ok: false as const, error: result.error };
   };
 
   const handleApplyPatch = () => {
@@ -73,9 +99,11 @@ function DashboardContent({
 
   const handleReset = () => {
     setTree(INITIAL_TREE);
+    treeRef.current = INITIAL_TREE;
     setPatchInput("");
     setError(null);
     setSelectedExample(null);
+    setSelectedElementKey(null);
   };
 
   const hasElements = Object.keys(tree.elements).length > 0;
@@ -98,6 +126,13 @@ function DashboardContent({
           {/* Left: Playground */}
           {showPlayground && (
             <div className="flex flex-col gap-6 lg:overflow-auto lg:pr-2">
+              <ChatPanel
+                tree={tree}
+                selectedKey={selectedElementKey}
+                data={data}
+                onApplyPatchLine={applyPatchLine}
+              />
+
               {/* Patch Playground */}
               <div
                 style={{
@@ -424,6 +459,14 @@ function DashboardContent({
                     prev === nextKey ? prev : nextKey,
                   );
                 }}
+                onPointerDownCapture={(e) => {
+                  const target = e.target as HTMLElement | null;
+                  const clicked = target?.closest?.(
+                    "[data-ui-key]",
+                  ) as HTMLElement | null;
+                  const nextKey = clicked?.getAttribute("data-ui-key") ?? null;
+                  setSelectedElementKey(nextKey);
+                }}
                 onPointerLeave={() => setHoveredElementKey(null)}
               >
                 {!hasElements ? (
@@ -447,7 +490,12 @@ function DashboardContent({
           {showJson && (
             <div className="flex flex-col gap-6 lg:overflow-auto lg:pl-2">
               {hasElements ? (
-                <JsonTreePanel tree={tree} highlightedKey={hoveredElementKey} />
+                <JsonTreePanel
+                  tree={tree}
+                  highlightedKey={hoveredElementKey}
+                  selectedKey={selectedElementKey}
+                  onSelectKey={setSelectedElementKey}
+                />
               ) : (
                 <div
                   style={{

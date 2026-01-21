@@ -39,14 +39,19 @@ function getElementKeysInTreeOrder(tree: UITree) {
 export function JsonTreePanel({
   tree,
   highlightedKey,
+  selectedKey,
+  onSelectKey,
 }: {
   tree: UITree;
   highlightedKey?: string | null;
+  selectedKey?: string | null;
+  onSelectKey?: (key: string | null) => void;
 }) {
   const elementKeys = useMemo(() => getElementKeysInTreeOrder(tree), [tree]);
 
   const rootKey = tree.root;
   const rootElement = rootKey ? tree.elements[rootKey] : undefined;
+  const selectedElement = selectedKey ? tree.elements[selectedKey] : undefined;
 
   return (
     <div
@@ -70,11 +75,67 @@ export function JsonTreePanel({
 
       <div style={{ display: "grid", gap: 10 }}>
         <div style={{ fontSize: 13, color: "var(--muted)" }}>
+          Selected:{" "}
+          <span style={{ color: "var(--foreground)", fontWeight: 600 }}>
+            {selectedKey || "(none)"}
+          </span>
+          {selectedKey && (
+            <button
+              onClick={() => onSelectKey?.(null)}
+              style={{
+                marginLeft: 10,
+                padding: "2px 8px",
+                fontSize: 12,
+                fontWeight: 500,
+                background: "transparent",
+                color: "var(--muted)",
+                border: "1px solid var(--border)",
+                borderRadius: "var(--radius)",
+                cursor: "pointer",
+              }}
+            >
+              Clear
+            </button>
+          )}
+        </div>
+
+        <div style={{ fontSize: 13, color: "var(--muted)" }}>
           Root:{" "}
           <span style={{ color: "var(--foreground)", fontWeight: 600 }}>
             {rootKey || "(empty)"}
           </span>
         </div>
+
+        {selectedElement && (
+          <details>
+            <summary
+              style={{
+                cursor: "pointer",
+                fontSize: 13,
+                color: "var(--foreground)",
+                fontWeight: 600,
+              }}
+            >
+              Selected element (collapsed by default)
+            </summary>
+            <pre
+              style={{
+                marginTop: 8,
+                marginBottom: 0,
+                padding: 12,
+                background: "var(--background)",
+                border: "1px solid var(--border)",
+                borderRadius: "var(--radius)",
+                overflow: "auto",
+                fontSize: 12,
+                color: "var(--muted)",
+                maxHeight: 320,
+              }}
+            >
+              {JSON.stringify(selectedElement, null, 2)}
+            </pre>
+          </details>
+        )}
 
         {rootElement && (
           <details>
@@ -124,10 +185,14 @@ export function JsonTreePanel({
               const element = tree.elements[key];
               if (!element) return null;
               const isHighlighted = key === highlightedKey;
+              const isSelected = key === selectedKey;
 
               return (
                 <details key={key}>
                   <summary
+                    onClick={() => {
+                      onSelectKey?.(key);
+                    }}
                     style={{
                       cursor: "pointer",
                       fontSize: 12,
@@ -135,12 +200,18 @@ export function JsonTreePanel({
                       fontWeight: 500,
                       padding: "6px 8px",
                       border: `1px solid ${
-                        isHighlighted ? "rgba(59, 130, 246, 0.55)" : "var(--border)"
+                        isSelected
+                          ? "rgba(16, 185, 129, 0.65)"
+                          : isHighlighted
+                            ? "rgba(59, 130, 246, 0.55)"
+                            : "var(--border)"
                       }`,
                       borderRadius: "var(--radius)",
                       background: isHighlighted
                         ? "rgba(59, 130, 246, 0.12)"
-                        : "var(--background)",
+                        : isSelected
+                          ? "rgba(16, 185, 129, 0.10)"
+                          : "var(--background)",
                     }}
                   >
                     {elementSummary(element)}

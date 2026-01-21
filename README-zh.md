@@ -16,6 +16,31 @@
 - **Live preview 悬浮定位 JSON**：鼠标悬浮到组件 → 右侧 JSON tree 高亮对应 element
 - **JSON tree 顺序更贴近渲染**：Elements 按 UI 树遍历顺序展示（root → children）
 - **List/Chart 默认可见**：示例数据能直接渲染成列表/图表（无需额外 children 模板）
+- **对话式编辑 UI（Chat Edit）**：点击组件选中 → 用自然语言让 agent 改/删/加 → 流式返回的 JSON patch 行会实时应用；回复以 Markdown Modal 展示（支持 Raw 实时流预览）
+
+## json-render 有什么用？
+
+如果你想让 AI 帮你“搭页面 / 改界面”，通常会同时遇到两个诉求：
+- **AI 要有创造力**：能组合布局、组件、内容，提出合理的 UI 方案
+- **工程要可控**：不能让模型随意生成代码，UI 变更要可追踪、可回滚、可调试
+
+json-render 的思路是把 UI 变成可序列化的 `UITree`，并用 **JSONL patches** 来做增量修改。这样 agent 可以通过读取 `UITree` 来“感知当前 UI”，再通过输出 patches 来“操纵你预定义好的 UI 组件”，同时你仍然保有边界：
+组件类型来自你的 registry，数据通过 JSON Pointer 绑定，交互通过你实现的命名 actions 触发。
+
+## 它和 Google A2UI 什么关系？
+
+这个方向经常被概括为 **“AI → JSON → UI”**。Google 的 **A2UI** 与 `vercel-labs/json-render` 在概念上有明显重叠，但侧重点不同：
+- **A2UI** 更偏 **协议优先**：标准化的流式消息，强调跨框架/跨实现可移植
+- **json-render** 更偏 **开发者优先**：强调灵活、易集成，让你自己定义输入/契约形状
+
+json-render 维护者也明确表示：json-render 的 JSON 形状主要是 **库的 API**，而不是一个要成为行业标准的协议；但在有价值的情况下，也愿意在输入层做 A2UI 等协议的适配与互通。
+
+问题与回答引用：`https://github.com/vercel-labs/json-render/issues/9`
+
+## 项目来源
+
+本项目基于官方 dashboard 示例改造而来：
+`https://github.com/vercel-labs/json-render/tree/main/examples/dashboard`
 
 ---
 
@@ -34,6 +59,21 @@ bun run lint
 bun run build
 ```
 
+### AI Chat（可选）
+
+聊天编辑器会调用 `src/app/api/generate/route.ts`，需要设置环境变量 `GLM_API_KEY`。
+
+创建 `.env.local`：
+```bash
+GLM_API_KEY=...
+```
+
+### AI 模型/Provider 选择
+
+本项目的生成接口使用 Vercel AI SDK（`ai`），因此你可以根据需求替换不同厂商的模型/Provider。
+
+参考指南：`https://ai-sdk.dev/docs/getting-started/choosing-a-provider`
+
 ---
 
 ## Playground 工作原理
@@ -44,6 +84,12 @@ UI 是三栏布局：
 - **右侧**：**JSON 树查看器**（元素默认折叠）
 
 使用 **实时预览**上方的面板按钮来**隐藏/显示** Playground 或 JSON 面板。
+
+### 对话式编辑 UI（Chat Edit）
+
+1. 在 **实时预览**里点击一个组件（或在右侧 JSON tree 列表里点击）来选中它。
+2. 使用页面底部居中的固定输入框发送指令（Ctrl/⌘ + Enter 发送）。
+3. agent 的回复会以 Modal（Markdown）展示；其中任何“单独一行的 JSON patch”会在流式过程中实时应用到当前 `UITree`。
 
 ### Live preview 悬浮 → JSON 高亮（元素定位）
 
@@ -60,17 +106,21 @@ UI 是三栏布局：
 
 ## 截图
 
-**实时预览 + Playground**
+**1）整体 UI 总览（Playground + 实时预览 + JSON 树 + Chat）**
 
 ![实时预览 + Playground](assets/images/playground01.png)
 
-**实时预览 + JSON 树**
+**2）Preview ↔ JSON Tree 对应关系（展开 element）**
 
 ![实时预览 + JSON 树](assets/images/playground02.png)
 
-**Playground + 实时预览 + JSON 树**
+**3）Playground ↔ 数据绑定 ↔ Preview**
 
 ![Playground + 实时预览 + JSON 树](assets/images/playground03.png)
+
+**4）Chatbot 回复 Modal（描述选中的 Table）**
+
+![Chatbot 回复 Modal](assets/images/playground04.png)
 
 ---
 
