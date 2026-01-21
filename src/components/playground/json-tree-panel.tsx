@@ -10,8 +10,40 @@ function elementSummary(element: UIElement) {
     : `${element.key} (${element.type})`;
 }
 
-export function JsonTreePanel({ tree }: { tree: UITree }) {
-  const elementKeys = useMemo(() => Object.keys(tree.elements).sort(), [tree.elements]);
+function getElementKeysInTreeOrder(tree: UITree) {
+  const visited = new Set<string>();
+  const result: Array<string> = [];
+
+  const visit = (key: string) => {
+    if (!key || visited.has(key)) return;
+    const element = tree.elements[key];
+    if (!element) return;
+    visited.add(key);
+    result.push(key);
+    const children = Array.isArray(element.children) ? element.children : [];
+    for (const childKey of children) {
+      visit(childKey);
+    }
+  };
+
+  if (tree.root) visit(tree.root);
+
+  const remainingKeys = Object.keys(tree.elements).sort();
+  for (const key of remainingKeys) {
+    if (!visited.has(key)) result.push(key);
+  }
+
+  return result;
+}
+
+export function JsonTreePanel({
+  tree,
+  highlightedKey,
+}: {
+  tree: UITree;
+  highlightedKey?: string | null;
+}) {
+  const elementKeys = useMemo(() => getElementKeysInTreeOrder(tree), [tree]);
 
   const rootKey = tree.root;
   const rootElement = rootKey ? tree.elements[rootKey] : undefined;
@@ -91,6 +123,7 @@ export function JsonTreePanel({ tree }: { tree: UITree }) {
             {elementKeys.map((key) => {
               const element = tree.elements[key];
               if (!element) return null;
+              const isHighlighted = key === highlightedKey;
 
               return (
                 <details key={key}>
@@ -101,9 +134,13 @@ export function JsonTreePanel({ tree }: { tree: UITree }) {
                       color: "var(--foreground)",
                       fontWeight: 500,
                       padding: "6px 8px",
-                      border: "1px solid var(--border)",
+                      border: `1px solid ${
+                        isHighlighted ? "rgba(59, 130, 246, 0.55)" : "var(--border)"
+                      }`,
                       borderRadius: "var(--radius)",
-                      background: "var(--background)",
+                      background: isHighlighted
+                        ? "rgba(59, 130, 246, 0.12)"
+                        : "var(--background)",
                     }}
                   >
                     {elementSummary(element)}
@@ -133,4 +170,3 @@ export function JsonTreePanel({ tree }: { tree: UITree }) {
     </div>
   );
 }
-

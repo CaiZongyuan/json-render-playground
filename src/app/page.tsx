@@ -18,6 +18,7 @@ import {
   AddElementPanel,
   DataPanel,
   type ActionLogEntry,
+  InspectableRenderer,
   JsonTreePanel,
   ValidationPanel,
 } from "@/src/components/playground";
@@ -25,7 +26,6 @@ import {
 import {
   ActionProvider,
   DataProvider,
-  Renderer,
   ValidationProvider,
   VisibilityProvider,
 } from "@json-render/react";
@@ -46,6 +46,9 @@ function DashboardContent({
   const [selectedExample, setSelectedExample] = useState<string | null>(null);
   const [showPlayground, setShowPlayground] = useState(true);
   const [showJson, setShowJson] = useState(true);
+  const [hoveredElementKey, setHoveredElementKey] = useState<string | null>(
+    null,
+  );
 
   const applyPatchString = (patches: string) => {
     const result = applyPatches(tree, patches);
@@ -79,16 +82,16 @@ function DashboardContent({
 
   const gridColumnsClass =
     showPlayground && showJson
-      ? "lg:grid-cols-[380px_minmax(0,1fr)_360px] xl:grid-cols-[420px_minmax(0,1fr)_420px]"
+      ? "lg:grid-cols-[480px_minmax(0,1fr)_360px] xl:grid-cols-[520px_minmax(0,1fr)_420px]"
       : showPlayground && !showJson
-        ? "lg:grid-cols-[380px_minmax(0,1fr)] xl:grid-cols-[420px_minmax(0,1fr)]"
+        ? "lg:grid-cols-[480px_minmax(0,1fr)] xl:grid-cols-[520px_minmax(0,1fr)]"
         : !showPlayground && showJson
           ? "lg:grid-cols-[minmax(0,1fr)_360px] xl:grid-cols-[minmax(0,1fr)_420px]"
           : "lg:grid-cols-[minmax(0,1fr)]";
 
   return (
     <div className="min-h-screen bg-zinc-50 font-sans dark:bg-black">
-      <div className="mx-auto w-full max-w-[1480px] p-6">
+      <div className="w-full px-4 py-6 sm:px-6">
         <div
           className={`grid grid-cols-1 gap-6 ${gridColumnsClass} lg:h-[calc(100vh-48px)]`}
         >
@@ -411,6 +414,17 @@ function DashboardContent({
                   border: "1px solid var(--border)",
                   borderRadius: "var(--radius)",
                 }}
+                onPointerMoveCapture={(e) => {
+                  const target = e.target as HTMLElement | null;
+                  const hovered = target?.closest?.(
+                    "[data-ui-key]",
+                  ) as HTMLElement | null;
+                  const nextKey = hovered?.getAttribute("data-ui-key") ?? null;
+                  setHoveredElementKey((prev) =>
+                    prev === nextKey ? prev : nextKey,
+                  );
+                }}
+                onPointerLeave={() => setHoveredElementKey(null)}
               >
                 {!hasElements ? (
                   <div
@@ -423,7 +437,7 @@ function DashboardContent({
                     <p style={{ margin: 0 }}>No elements to display</p>
                   </div>
                 ) : (
-                  <Renderer tree={tree} registry={componentRegistry} />
+                  <InspectableRenderer tree={tree} registry={componentRegistry} />
                 )}
               </div>
             </div>
@@ -433,7 +447,7 @@ function DashboardContent({
           {showJson && (
             <div className="flex flex-col gap-6 lg:overflow-auto lg:pl-2">
               {hasElements ? (
-                <JsonTreePanel tree={tree} />
+                <JsonTreePanel tree={tree} highlightedKey={hoveredElementKey} />
               ) : (
                 <div
                   style={{
