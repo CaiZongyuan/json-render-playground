@@ -1,5 +1,7 @@
 ## nextjs-json-render
 
+**English | [中文](README-zh.md)**
+
 Interactive playground for learning **json-render** in a real Next.js app.
 
 **json-render**: [https://github.com/vercel-labs/json-render](https://github.com/vercel-labs/json-render)
