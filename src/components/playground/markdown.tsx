@@ -218,7 +218,7 @@ export function Markdown({ content }: { content: string }) {
     <div style={{ display: "grid", gap: 10, lineHeight: 1.6 }}>
       {blocks.map((b, idx) => {
         if (b.type === "heading") {
-          const Tag = (`h${Math.min(4, b.level)}` as unknown) as keyof JSX.IntrinsicElements;
+          const Tag = `h${Math.min(4, b.level)}` as "h1" | "h2" | "h3" | "h4";
           return (
             <Tag key={idx} style={{ margin: 0, fontWeight: 650 }}>
               {renderInline(b.text)}

@@ -88,7 +88,7 @@ export const dashboardCatalog = createCatalog({
         action: z
           .object({
             name: z.string(),
-            params: z.record(z.unknown()).optional(),
+            params: z.record(z.string(), z.unknown()).optional(),
           })
           .nullable(),
         disabled: z.boolean().nullable(),
@@ -184,7 +184,7 @@ export const dashboardCatalog = createCatalog({
             z.object({
               fn: z.string(),
               message: z.string(),
-              args: z.record(z.unknown()).optional(),
+              args: z.record(z.string(), z.unknown()).optional(),
             }),
           )
           .nullable(),
