@@ -76,7 +76,7 @@ export const MOCK_PATCHES_DASHBOARD = `{"op":"set","path":"/root","value":"root"
 {"op":"add","path":"/elements/select-role","value":{"key":"select-role","type":"Select","props":{"label":"Role","valuePath":"/form/role","placeholder":"Select a role","options":[{"value":"admin","label":"Administrator"},{"value":"user","label":"User"},{"value":"guest","label":"Guest"},{"value":"moderator","label":"Moderator"}]}}}
 {"op":"add","path":"/elements/date-picker-start","value":{"key":"date-picker-start","type":"DatePicker","props":{"label":"Start Date","valuePath":"/form/startDate"}}}
 {"op":"add","path":"/elements/form-buttons","value":{"key":"form-buttons","type":"Stack","props":{"direction":"horizontal","gap":"sm","align":"center"},"children":["button-submit","button-cancel","button-delete"]}}
-{"op":"add","path":"/elements/button-submit","value":{"key":"button-submit","type":"Button","props":{"label":"Submit","variant":"primary","action":{"name":"submitForm"}}}}
+{"op":"add","path":"/elements/button-submit","value":{"key":"button-submit","type":"Button","props":{"label":"Submit","variant":"primary","action":{"name":"submitForm","params":{"form":{"path":"/form"}}}}}}
 {"op":"add","path":"/elements/button-cancel","value":{"key":"button-cancel","type":"Button","props":{"label":"Cancel","variant":"secondary","action":{"name":"cancelForm"}}}}
 {"op":"add","path":"/elements/button-delete","value":{"key":"button-delete","type":"Button","props":{"label":"Delete","variant":"danger","action":{"name":"deleteItem"}}}}
 

@@ -2,7 +2,8 @@
 
 import { useMemo } from "react";
 import { type ComponentRenderProps } from "@json-render/react";
-import { useData, useFieldValidation } from "@json-render/react";
+import { useData } from "@json-render/react";
+import { useFieldValidation } from "@/src/lib/validation";
 import { getByPath } from "@json-render/core";
 
 export function TextField({ element }: ComponentRenderProps) {
@@ -25,10 +26,8 @@ export function TextField({ element }: ComponentRenderProps) {
     }),
     [checks, validateOn],
   );
-  const { errors, validate, touch } = useFieldValidation(
-    valuePath,
-    validationConfig,
-  );
+  const { state, errors, validate, touch } = useFieldValidation(valuePath, validationConfig);
+  const showErrors = state.touched && errors.length > 0;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
@@ -49,18 +48,19 @@ export function TextField({ element }: ComponentRenderProps) {
           padding: "8px 12px",
           borderRadius: "var(--radius)",
           border:
-            errors.length > 0 ? "1px solid #ef4444" : "1px solid var(--border)",
+            showErrors ? "1px solid #ef4444" : "1px solid var(--border)",
           background: "var(--card)",
           color: "var(--foreground)",
           fontSize: 16,
           outline: "none",
         }}
       />
-      {errors.map((error, i) => (
-        <span key={i} style={{ fontSize: 12, color: "#ef4444" }}>
-          {error}
-        </span>
-      ))}
+      {showErrors &&
+        errors.map((error, i) => (
+          <span key={i} style={{ fontSize: 12, color: "#ef4444" }}>
+            {error}
+          </span>
+        ))}
     </div>
   );
 }

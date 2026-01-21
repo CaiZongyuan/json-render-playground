@@ -26,9 +26,9 @@ import {
 import {
   ActionProvider,
   DataProvider,
-  ValidationProvider,
   VisibilityProvider,
 } from "@json-render/react";
+import { ValidationProvider } from "@/src/lib/validation";
 
 const INITIAL_TREE: UITree = parsePatchesToTree(MOCK_PATCHES_DASHBOARD);
 const COMPONENT_TYPES = Object.keys(componentRegistry).sort();

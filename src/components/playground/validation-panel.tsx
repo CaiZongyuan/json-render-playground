@@ -1,21 +1,10 @@
 "use client";
 
 import { useMemo } from "react";
-import { useValidation } from "@json-render/react";
-
-type FieldState = {
-  touched?: boolean;
-  validated?: boolean;
-  result?: { valid?: boolean; errors?: Array<string> } | null;
-};
+import { useValidation } from "@/src/lib/validation";
 
 export function ValidationPanel() {
-  const { fieldStates, validateAll, touch, clear } = useValidation() as {
-    fieldStates: Record<string, FieldState>;
-    validateAll: () => boolean;
-    touch: (path: string) => void;
-    clear: (path: string) => void;
-  };
+  const { fieldStates, validateAll, touch, clear } = useValidation();
 
   const rows = useMemo(() => {
     return Object.entries(fieldStates).map(([path, state]) => {

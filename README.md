@@ -14,6 +14,11 @@ This repo focuses on the core concepts you’ll use in json-render projects:
 - **Validation**: field checks + validation state debugging
 - **Actions**: named actions handled by your app, with execution logging
 
+Learning-friendly extras:
+- **Hover-to-locate JSON**: hover a component in Live preview → highlights the matching element in the JSON tree
+- **Tree order matches render**: JSON tree lists elements in UI traversal order (root → children)
+- **List/Chart defaults**: demo data renders out-of-the-box (no extra item templates required)
+
 ---
 
 ## Quick Start
@@ -122,6 +127,17 @@ Try it:
 2. Focus/blur the email field (or use **Validate all**).
 3. See validation errors in the UI + the Validation panel.
 
+Notes:
+- **Touch** marks “user interacted”; **Validate** runs checks and produces errors. So “Touch all” may only flip `touched=true`.
+- This app uses an **app-side validation provider** (`src/lib/validation.tsx`) to correctly validate nested JSON Pointer paths like `/form/email`.
+
+---
+
+## List / Chart Data Shapes
+
+- **List** (`src/components/ui/list.tsx`): renders arrays from `dataPath`; `{name,value}` shows as “name — value”, other objects fall back to JSON.
+- **Chart** (`src/components/ui/chart.tsx`): supports `{label,value}` and common demo shapes like `{month,sales}` and `{source,visitors}`; you can also pass `labelKey/valueKey`.
+
 ---
 
 ## Repo Pointers
@@ -131,4 +147,5 @@ Try it:
 - Patch utilities + examples: `src/lib/patchUtils.ts`
 - Demo initial tree: `src/lib/mockPatches.ts`
 - Demo data/actions: `src/lib/mockData.ts`
+- Validation provider (app-side): `src/lib/validation.tsx`
 - Troubleshooting notes: `docs/troubleshooting-nextjs-hydration-and-update-depth.md`
